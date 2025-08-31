@@ -1,0 +1,297 @@
+# Documentation Standards
+
+This rule covers documentation requirements for the property search project.
+
+## 1. Required Documentation Files
+
+### 1.1 Service-Level Documentation
+Each service directory MUST have:
+- `README.md`: Service overview and setup instructions
+- `DEPLOYMENT.md`: Deployment-specific instructions
+- `TODO.md`: Current tasks and roadmap
+
+### 1.2 Project-Level Documentation
+Root directory should have:
+- `README.md`: Project overview and architecture
+- `DEPLOYMENT.md`: Multi-service deployment guide
+- `TODO.md`: Project-wide tasks and roadmap
+
+## 2. README.md Template
+
+### 2.1 Service README Structure
+```markdown
+# [Service Name]
+
+## Overview
+Brief description of what this service does.
+
+## Features
+- Feature 1
+- Feature 2
+- Feature 3
+
+## Quick Start
+
+### Prerequisites
+- Python 3.8+
+- Railway account
+- GitHub repository
+
+### Local Development
+```bash
+# Clone repository
+git clone [repo-url]
+cd [service-directory]
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set environment variables
+export SECRET_KEY="your-secret-key"
+export FLASK_ENV="development"
+
+# Run locally
+python app.py
+```
+
+### Deployment
+1. Connect GitHub repo to Railway
+2. Set environment variables in Railway dashboard
+3. Deploy automatically on git push
+
+## API Endpoints
+- `GET /`: Main page
+- `GET /health`: Health check
+- `POST /api/search`: Search endpoint
+
+## Configuration
+See `config.json` for service-specific settings.
+
+## Environment Variables
+- `SECRET_KEY`: Flask secret key
+- `FLASK_ENV`: Environment (development/production)
+
+## Troubleshooting
+Common issues and solutions.
+```
+
+## 3. Deployment Documentation
+
+### 3.1 DEPLOYMENT.md Template
+```markdown
+# Deployment Guide
+
+## Railway Deployment
+
+### Prerequisites
+- Railway account
+- GitHub repository connected
+- Environment variables configured
+
+### Required Files
+- `railway.json`: Railway configuration
+- `Procfile`: Start command
+- `requirements.txt`: Python dependencies
+- `app.py`: Main application
+
+### Environment Variables
+Set in Railway dashboard:
+- `SECRET_KEY`: [generate secure random string]
+- `FLASK_ENV`: `production`
+
+### Deployment Process
+1. Push code to GitHub
+2. Railway automatically builds and deploys
+3. Check deployment logs for errors
+4. Verify health endpoint: `[url]/health`
+
+### Troubleshooting
+- Build failures: Check requirements.txt
+- No domain: Verify railway.json configuration
+- 404 errors: Check start command and health endpoint
+```
+
+## 4. TODO.md Standards
+
+### 4.1 TODO Structure
+```markdown
+# TODO - [Service/Project Name]
+
+## 🎯 Current Sprint
+- [ ] Task 1
+- [ ] Task 2
+- [ ] Task 3
+
+## 🔥 High Priority
+- [ ] Critical bug fix
+- [ ] Performance optimization
+- [ ] Security update
+
+## 📋 Backlog
+- [ ] Feature request 1
+- [ ] Feature request 2
+- [ ] Technical debt
+
+## ✅ Completed
+- [x] Completed task 1
+- [x] Completed task 2
+
+## 🚀 Future Ideas
+- Long-term feature ideas
+- Architecture improvements
+- Integration possibilities
+```
+
+## 5. Code Documentation
+
+### 5.1 Function Documentation
+```python
+def search_properties(query, filters=None):
+    """
+    Search for properties using semantic matching.
+    
+    Args:
+        query (str): Natural language search query
+        filters (dict, optional): Additional filters to apply
+        
+    Returns:
+        dict: Search results with properties and metadata
+        
+    Raises:
+        ValueError: If query is empty or invalid
+        APIError: If external API call fails
+    """
+    pass
+```
+
+### 5.2 Class Documentation
+```python
+class SemanticHouseSearch:
+    """
+    Main class for semantic property search functionality.
+    
+    This class handles natural language queries, property matching,
+    and result ranking using semantic similarity.
+    
+    Attributes:
+        config (dict): Configuration settings
+        api_client: External API client
+        cache: Result caching mechanism
+    """
+    pass
+```
+
+## 6. API Documentation
+
+### 6.1 Endpoint Documentation
+```markdown
+## POST /api/search
+
+Search for properties using natural language.
+
+### Request Body
+```json
+{
+  "query": "high ceilings, natural light, safe neighborhood",
+  "min_price": 1000000,
+  "max_price": 2000000,
+  "min_sqft": 1000,
+  "max_sqft": 2000,
+  "center": "San Francisco, CA",
+  "radius": 2.0
+}
+```
+
+### Response
+```json
+{
+  "status": "success",
+  "results": [
+    {
+      "address": "123 Main St",
+      "price": 1500000,
+      "sqft": 1200,
+      "score": 0.95,
+      "description": "Beautiful home with high ceilings..."
+    }
+  ],
+  "total": 1,
+  "query_time": 2.5
+}
+```
+
+### Error Response
+```json
+{
+  "status": "error",
+  "message": "Invalid query parameter",
+  "code": 400
+}
+```
+```
+
+## 7. Architecture Documentation
+
+### 7.1 System Overview
+```markdown
+# System Architecture
+
+## Overview
+The property search system consists of multiple microservices deployed on Railway.
+
+## Services
+- **semantic-search**: Main search service
+- **data-processor**: Property data processing
+- **report-generator**: Report generation service
+
+## Data Flow
+1. User submits search query
+2. Semantic search service processes query
+3. External APIs provide property data
+4. Results are ranked and filtered
+5. Response sent to user
+
+## Technology Stack
+- **Backend**: Python Flask
+- **Deployment**: Railway
+- **APIs**: Zillow, other property APIs
+- **Frontend**: HTML/CSS/JavaScript
+```
+
+## 8. Maintenance Documentation
+
+### 8.1 Update Procedures
+```markdown
+# Update Procedures
+
+## Adding New Dependencies
+1. Update requirements.txt
+2. Test locally
+3. Deploy to Railway
+4. Verify functionality
+
+## Configuration Changes
+1. Update config.json
+2. Test with new configuration
+3. Deploy changes
+4. Monitor for issues
+
+## Environment Variable Updates
+1. Update Railway dashboard
+2. Restart service
+3. Verify changes take effect
+```
+
+## 9. Documentation Maintenance
+
+### 9.1 Keeping Docs Current
+- Update README when adding features
+- Update API docs when changing endpoints
+- Update deployment docs when changing process
+- Review and update quarterly
+
+### 9.2 Documentation Review
+- Check for outdated information
+- Verify all links work
+- Ensure examples are current
+- Test setup instructions

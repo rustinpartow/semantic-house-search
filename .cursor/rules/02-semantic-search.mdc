@@ -1,0 +1,86 @@
+# Semantic Search Development
+
+This rule covers semantic search functionality for property search.
+
+## 1. Core Components
+
+### 1.1 SemanticHouseSearch Class
+- Main class in `semantic_house_search.py`
+- Handles search queries and property matching
+- Integrates with Zillow API for property data
+- Generates semantic similarity scores
+
+### 1.2 Configuration Management
+- Uses `config.json` for search parameters
+- Supports multiple search configurations
+- Environment-specific settings (dev/prod)
+
+## 2. Search Process
+
+### 2.1 Query Processing
+- Parse natural language queries
+- Extract key requirements (price, location, features)
+- Generate semantic embeddings
+- Match against property descriptions
+
+### 2.2 Property Matching
+- Calculate similarity scores
+- Apply filters (price, location, size)
+- Rank results by relevance
+- Return top matches
+
+## 3. API Integration
+
+### 3.1 Zillow API
+- Respect rate limits (implement delays)
+- Handle API failures gracefully
+- Cache results when possible
+- Retry failed requests
+
+### 3.2 Error Handling
+- Network timeouts
+- API rate limiting
+- Invalid responses
+- Missing data fields
+
+## 4. Performance Considerations
+
+### 4.1 Caching
+- Cache API responses
+- Store processed results
+- Implement cache expiration
+- Handle cache misses
+
+### 4.2 Rate Limiting
+- Implement request delays
+- Monitor API usage
+- Handle rate limit responses
+- Queue requests when needed
+
+## 5. Search Quality
+
+### 5.1 Relevance Scoring
+- Weight different factors appropriately
+- Consider user preferences
+- Handle edge cases
+- Provide fallback results
+
+### 5.2 Result Filtering
+- Apply price range filters
+- Filter by location radius
+- Size and feature requirements
+- Availability status
+
+## 6. Testing
+
+### 6.1 Search Queries
+- Test various query types
+- Verify result relevance
+- Check filtering accuracy
+- Test edge cases
+
+### 6.2 API Integration
+- Mock API responses for testing
+- Test error conditions
+- Verify rate limiting
+- Check data parsing

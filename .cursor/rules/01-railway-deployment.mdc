@@ -1,0 +1,117 @@
+# Railway Deployment
+
+This rule covers all aspects of deploying services to Railway.
+
+## 1. Required Files for Every Railway Project
+
+### 1.1 railway.json (MANDATORY)
+Every Railway project MUST have a `railway.json` file:
+```json
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "python app.py",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 100,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
+```
+
+### 1.2 Procfile (Alternative to startCommand)
+If not using railway.json startCommand, include a Procfile:
+```
+web: python app.py
+```
+
+### 1.3 requirements.txt
+Must be in the root of each service directory with all dependencies.
+
+## 2. Environment Variables (MANDATORY)
+
+Every deployment MUST include:
+- `SECRET_KEY`: Secure random string for Flask sessions
+- `FLASK_ENV`: Set to `production` for live deployments
+- `PORT`: Railway automatically sets this, but app must use it
+
+## 3. Domain Generation
+
+### 3.1 Why Domains Don't Appear
+- Missing `railway.json` configuration
+- Service not configured as web service
+- Missing health check endpoint
+- Incorrect start command
+
+### 3.2 How to Fix "Unexposed Service"
+1. Add `railway.json` with proper configuration
+2. Ensure health check endpoint exists (`/health`)
+3. Verify start command is correct
+4. Redeploy after configuration changes
+
+## 4. Deployment Process
+
+### 4.1 Before Deployment
+- Verify all required files exist
+- Check environment variables are set
+- Ensure app uses `os.environ.get('PORT', 5000)`
+- Test locally first
+
+### 4.2 During Deployment
+- Monitor build logs for errors
+- Check for missing dependencies
+- Verify start command execution
+- Wait for "ACTIVE" status
+
+### 4.3 After Deployment
+- Test health endpoint: `[url]/health`
+- Test main functionality
+- Verify public URL is accessible
+- Check Railway dashboard for any errors
+
+## 5. Common Issues & Solutions
+
+### 5.1 "No start command found"
+- Add Procfile or railway.json with startCommand
+- Ensure start command is correct for your app
+
+### 5.2 "Unexposed service"
+- Add railway.json configuration
+- Include healthcheckPath in configuration
+- Redeploy after adding configuration
+
+### 5.3 Build failures
+- Check requirements.txt is complete
+- Verify Python version compatibility
+- Check for missing system dependencies
+
+### 5.4 Environment variable errors
+- Set SECRET_KEY in Railway dashboard
+- Set FLASK_ENV=production
+- Verify app reads from environment variables
+
+## 6. Multi-Service Deployment
+
+### 6.1 Service Structure
+```
+property_search/
+├── service1/
+│   ├── app.py
+│   ├── requirements.txt
+│   ├── railway.json
+│   └── Procfile
+├── service2/
+│   ├── app.py
+│   ├── requirements.txt
+│   ├── railway.json
+│   └── Procfile
+```
+
+### 6.2 Independent Deployment
+- Each service deploys independently
+- Each has its own Railway project
+- Each has its own environment variables
+- Each has its own domain/URL

@@ -1,0 +1,239 @@
+# New Service Setup
+
+This rule covers creating new Railway services within the property search project.
+
+## 1. Service Directory Structure
+
+### 1.1 Required Directory Layout
+```
+property_search/
+├── new_service/
+│   ├── app.py                 # Main Flask application
+│   ├── requirements.txt       # Python dependencies
+│   ├── railway.json          # Railway configuration
+│   ├── Procfile              # Alternative start command
+│   ├── config.json           # Service configuration
+│   ├── .gitignore            # Git ignore rules
+│   ├── static/               # Static files (CSS, JS)
+│   │   ├── css/
+│   │   └── js/
+│   ├── templates/            # HTML templates
+│   └── README.md             # Service documentation
+```
+
+### 1.2 Optional Files
+```
+├── test_app.py               # Unit tests
+├── semantic_search.py        # Search functionality
+├── data/                     # Data files
+└── logs/                     # Log files
+```
+
+## 2. Required Configuration Files
+
+### 2.1 railway.json (MANDATORY)
+```json
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "python app.py",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 100,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
+```
+
+### 2.2 Procfile (Alternative)
+```
+web: python app.py
+```
+
+### 2.3 requirements.txt
+```
+Flask==2.3.3
+requests==2.31.0
+beautifulsoup4==4.12.2
+# Add other dependencies as needed
+```
+
+### 2.4 .gitignore
+```
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Generated files
+*.html
+*.json
+!config.json
+!requirements.txt
+
+# Temporary files
+*.tmp
+*.temp
+```
+
+## 3. Flask App Template
+
+### 3.1 Basic app.py Structure
+```python
+#!/usr/bin/env python3
+"""app.py
+Flask web application for [Service Name]
+"""
+
+from flask import Flask, render_template, request, jsonify
+import json
+import os
+from datetime import datetime
+
+app = Flask(__name__)
+
+# Global configuration
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+@app.route('/')
+def index():
+    """Main page"""
+    return render_template('index.html')
+
+@app.route('/health')
+def health():
+    """Health check endpoint for Railway"""
+    return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
+
+@app.route('/api/example', methods=['POST'])
+def api_example():
+    """Example API endpoint"""
+    try:
+        data = request.get_json()
+        # Process request
+        result = {"message": "Success", "data": data}
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    # For Railway deployment
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_ENV') == 'development'
+    app.run(debug=debug, host='0.0.0.0', port=port)
+```
+
+## 4. Deployment Checklist
+
+### 4.1 Before First Deployment
+- [ ] All required files present
+- [ ] railway.json configured correctly
+- [ ] requirements.txt complete
+- [ ] app.py uses PORT environment variable
+- [ ] Health endpoint implemented
+- [ ] .gitignore excludes sensitive files
+
+### 4.2 Railway Setup
+- [ ] Create new Railway project
+- [ ] Connect GitHub repository
+- [ ] Set environment variables:
+  - [ ] SECRET_KEY (generate secure random string)
+  - [ ] FLASK_ENV=production
+- [ ] Deploy and verify domain generation
+
+### 4.3 Post-Deployment Verification
+- [ ] Service shows "ACTIVE" status
+- [ ] Public domain/URL generated
+- [ ] Health endpoint responds: `[url]/health`
+- [ ] Main functionality works
+- [ ] No errors in Railway logs
+
+## 5. Environment Variables
+
+### 5.1 Required Variables
+- `SECRET_KEY`: Secure random string for Flask sessions
+- `FLASK_ENV`: Set to `production` for live deployments
+
+### 5.2 Optional Variables
+- `DEBUG`: Enable debug mode (development only)
+- `LOG_LEVEL`: Set logging level
+- Custom variables for service-specific configuration
+
+## 6. Testing
+
+### 6.1 Local Testing
+```bash
+# Set environment variables
+export SECRET_KEY="your-secret-key"
+export FLASK_ENV="development"
+
+# Run locally
+python app.py
+```
+
+### 6.2 Health Check
+```bash
+curl http://localhost:5000/health
+```
+
+### 6.3 API Testing
+```bash
+curl -X POST http://localhost:5000/api/example \
+  -H "Content-Type: application/json" \
+  -d '{"test": "data"}'
+```

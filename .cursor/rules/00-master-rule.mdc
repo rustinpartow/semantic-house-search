@@ -1,0 +1,78 @@
+---
+alwaysApply: true
+---
+
+# MASTER Rule: Property Search & Railway Deployment
+
+This is the PRIMARY guide for the property search project. ALWAYS start here to determine which rules apply.
+
+## 1. CORE PRINCIPLES (ALWAYS APPLY - NO EXCEPTIONS)
+
+**1.1: Railway Deployment Requirements**
+- EVERY Railway project MUST have a `railway.json` configuration file
+- EVERY web service MUST have a `Procfile` or start command
+- EVERY deployment MUST include environment variables (SECRET_KEY, FLASK_ENV)
+- NEVER deploy without proper domain configuration
+
+**1.2: Multi-Project Architecture**
+- This repository contains multiple Railway projects in subdirectories
+- Each subdirectory is a separate deployable service
+- Each service has its own requirements.txt, configuration, and deployment settings
+- Services can be deployed independently
+
+**1.3: Real Estate Data Handling**
+- Always respect rate limits for external APIs (Zillow, etc.)
+- Implement proper error handling for API failures
+- Cache results when possible to reduce API calls
+- Handle missing or incomplete property data gracefully
+
+## 2. DECISION TREE - Which Rules to Use
+
+### 2.1 Railway Deployment
+- **ANY Railway deployment** → `01-railway-deployment`
+- **Domain/URL issues** → `01-railway-deployment`
+- **Environment variables** → `01-railway-deployment`
+- **Build failures** → `01-railway-deployment`
+
+### 2.2 Property Search Development
+- **Semantic search** → `02-semantic-search`
+- **Zillow API integration** → `03-zillow-integration`
+- **Data processing** → `04-data-processing`
+- **Report generation** → `05-report-generation`
+
+### 2.3 Flask Web Development
+- **API endpoints** → `06-flask-apis`
+- **Frontend integration** → `07-frontend-integration`
+- **Error handling** → `08-error-handling`
+- **Testing** → `09-testing-guidelines`
+
+### 2.4 Project Management
+- **New service creation** → `10-new-service-setup`
+- **Configuration management** → `11-configuration`
+- **Documentation** → `12-documentation`
+
+## 3. VERIFICATION CHECKLIST (MANDATORY)
+
+Before claiming ANY deployment works:
+1. ✓ Railway build successful? (check build logs)
+2. ✓ Service shows "ACTIVE" status?
+3. ✓ Public domain/URL generated?
+4. ✓ Health endpoint responding? (`/health`)
+5. ✓ Main functionality working? (test search)
+6. ✓ Environment variables set correctly?
+7. ✓ No build errors in Railway logs?
+
+## 4. RED FLAGS - STOP AND FIX
+
+- "Unexposed service" = Missing railway.json or domain configuration
+- "No start command found" = Missing Procfile or start command
+- Build failures = Missing dependencies or configuration
+- 404 errors = Service not properly exposed
+- Environment variable errors = Missing SECRET_KEY or other required vars
+- API rate limit errors = Need better caching or rate limiting
+
+## 5. CRITICAL LESSONS
+
+**Railway needs explicit configuration to generate public domains. Without railway.json, services run as background processes without public URLs.**
+
+**Each subdirectory is a separate deployable service. Don't mix configurations between services.**
