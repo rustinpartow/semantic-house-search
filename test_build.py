@@ -95,17 +95,17 @@ def test_required_files():
     
     return True
 
-def test_gunicorn_in_requirements():
-    """Test that gunicorn is in requirements.txt"""
-    print("Testing gunicorn in requirements.txt...")
+def test_gunicorn_not_in_requirements():
+    """Test that gunicorn is NOT in requirements.txt (we want Flask only)"""
+    print("Testing gunicorn NOT in requirements.txt...")
     try:
         with open('requirements.txt', 'r') as f:
             content = f.read()
-            if 'gunicorn' in content:
-                print("✓ Gunicorn found in requirements.txt")
+            if 'gunicorn' not in content:
+                print("✓ Gunicorn correctly removed from requirements.txt")
                 return True
             else:
-                print("✗ Gunicorn missing from requirements.txt")
+                print("✗ Gunicorn still in requirements.txt - should be removed")
                 return False
     except FileNotFoundError:
         print("✗ requirements.txt not found")
@@ -117,7 +117,7 @@ def main():
     
     tests = [
         test_required_files,
-        test_gunicorn_in_requirements,
+        test_gunicorn_not_in_requirements,
         test_requirements,
         test_gunicorn_config,
         test_app_imports,

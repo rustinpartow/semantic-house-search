@@ -11,7 +11,7 @@ test-files:
 
 test-requirements:
 	@echo "Testing requirements.txt..."
-	@python3 -c "with open('requirements.txt', 'r') as f: content = f.read(); print('✅ Gunicorn found in requirements.txt') if 'gunicorn' in content else (print('❌ Missing gunicorn in requirements.txt'), exit(1))"
+	@python3 -c "with open('requirements.txt', 'r') as f: content = f.read(); print('✅ Gunicorn correctly removed from requirements.txt') if 'gunicorn' not in content else (print('❌ Gunicorn still in requirements.txt - should be removed'), exit(1))"
 	@pip install -r requirements.txt
 
 test-flask:
