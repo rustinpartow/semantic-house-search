@@ -48,7 +48,7 @@ def test_app_imports():
         return False
 
 def test_health_endpoint():
-    """Test health endpoint with Gunicorn"""
+    """Test health endpoint with Flask"""
     print("Testing health endpoint...")
     
     # Set environment variables
@@ -57,9 +57,9 @@ def test_health_endpoint():
     env['SECRET_KEY'] = 'test-secret-key'
     env['FLASK_ENV'] = 'production'
     
-    # Start Gunicorn
+    # Start Flask app
     proc = subprocess.Popen([
-        'gunicorn', 'app:app', '--bind', '0.0.0.0:5001'
+        'python', 'app.py'
     ], env=env)
     
     try:
