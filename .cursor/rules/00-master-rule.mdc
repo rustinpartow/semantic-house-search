@@ -26,6 +26,13 @@ This is the PRIMARY guide for the property search project. ALWAYS start here to 
 - Cache results when possible to reduce API calls
 - Handle missing or incomplete property data gracefully
 
+**1.4: Build Verification (MANDATORY)**
+- ALWAYS run `make test-build` before pushing to GitHub
+- NEVER push without verifying Gunicorn configuration
+- ALWAYS test health endpoint locally before deployment
+- Use `deploy.sh` script for automated deployment
+- NEVER claim deployment works without running verification tests
+
 ## 2. DECISION TREE - Which Rules to Use
 
 ### 2.1 Railway Deployment
@@ -50,17 +57,19 @@ This is the PRIMARY guide for the property search project. ALWAYS start here to 
 - **New service creation** → `10-new-service-setup`
 - **Configuration management** → `11-configuration`
 - **Documentation** → `12-documentation`
+- **Build verification** → `13-railway-build-verification`
 
 ## 3. VERIFICATION CHECKLIST (MANDATORY)
 
 Before claiming ANY deployment works:
-1. ✓ Railway build successful? (check build logs)
-2. ✓ Service shows "ACTIVE" status?
-3. ✓ Public domain/URL generated?
-4. ✓ Health endpoint responding? (`/health`)
-5. ✓ Main functionality working? (test search)
-6. ✓ Environment variables set correctly?
-7. ✓ No build errors in Railway logs?
+1. ✓ **LOCAL BUILD TESTS PASSED?** (`make test-build`)
+2. ✓ Railway build successful? (check build logs)
+3. ✓ Service shows "ACTIVE" status?
+4. ✓ Public domain/URL generated?
+5. ✓ Health endpoint responding? (`/health`)
+6. ✓ Main functionality working? (test search)
+7. ✓ Environment variables set correctly?
+8. ✓ No build errors in Railway logs?
 
 ## 4. RED FLAGS - STOP AND FIX
 
