@@ -1,0 +1,16 @@
+name = "semantic-house-search"
+compatibility_date = "2023-08-30"
+
+[env.production]
+name = "semantic-house-search"
+
+[[env.production.routes]]
+pattern = "semantic-house-search.your-domain.com/*"
+zone_name = "your-domain.com"
+
+[build]
+command = "pip install -r requirements.txt"
+cwd = "."
+
+[build.environment_variables]
+PYTHON_VERSION = "3.9"
