@@ -466,8 +466,8 @@ class SemanticHouseSearch:
             print(f"🏠 Home types: {', '.join(self.interpreted_filters['home_types'])}")
         
         endpoints = [
-            "https://www.zillow.com/async-create-search-page-state",
-            "https://www.zillow.com/search/search-results"
+            "https://www.zillow.com/homes/San-Francisco-CA_rb/",
+            "https://www.zillow.com/homes/for_sale/San-Francisco-CA/"
         ]
         
         all_properties = []

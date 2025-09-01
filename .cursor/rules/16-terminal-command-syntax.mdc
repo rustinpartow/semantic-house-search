@@ -1,0 +1,175 @@
+---
+alwaysApply: true
+---
+
+# Terminal Command Syntax & Non-Interactive Guidelines
+
+**Core Principle:** Cursor agents must NEVER run interactive commands that wait for input, open TUIs, or require user interaction. All commands must be non-interactive, machine-parsable, and timeout-protected.
+
+## 1. MANDATORY: Non-Interactive Command Wrapper
+
+**ALWAYS use this wrapper for any command that might be interactive:**
+
+```bash
+nonint() { 
+    CI=1 NO_COLOR=1 timeout -k 5s 90s "$@"; 
+}
+```
+
+**Examples:**
+- `nonint railway list --json`
+- `nonint railway up --service api --detach`
+- `nonint npm install --yes`
+
+## 2. Environment Variables to Disable TUIs
+
+**ALWAYS set these environment variables:**
+- `CI=1` - Disables interactive UIs in most CLIs
+- `NO_COLOR=1` - Prevents colored output that can confuse parsing
+- `DEBIAN_FRONTEND=noninteractive` - For apt/dpkg commands
+- `NPM_CONFIG_INTERACTIVE=false` - For npm commands
+
+## 3. Command-Specific Non-Interactive Flags
+
+### Railway CLI
+```bash
+# Auth (set token first)
+export RAILWAY_TOKEN=your_token_here
+
+# List projects (JSON output)
+railway list --json
+
+# Link project (non-interactive)
+railway link <project-id>
+
+# Deploy (detached, no prompts)
+railway up --service <name> --detach
+```
+
+### NPM/Yarn
+```bash
+# Install without prompts
+npm install --yes --no-audit --no-fund
+yarn install --non-interactive
+
+# Run scripts
+npm run build --silent
+```
+
+### Git
+```bash
+# Clone without prompts
+git clone --quiet <repo-url>
+git config --global init.defaultBranch main
+```
+
+### Package Managers
+```bash
+# APT (Ubuntu/Debian)
+DEBIAN_FRONTEND=noninteractive apt-get install -y package
+
+# Homebrew
+brew install --quiet package
+
+# Pip
+pip install --quiet --no-input package
+```
+
+## 4. JSON Output & Parsing
+
+**ALWAYS prefer JSON output when available:**
+```bash
+# Good: Machine-parsable
+railway list --json | jq -r '.projects[] | select(.name=="my-project") | .id'
+
+# Bad: Human-readable
+railway list
+```
+
+## 5. Timeout Protection
+
+**ALWAYS wrap potentially hanging commands:**
+```bash
+# 30 second timeout
+timeout 30s command-that-might-hang
+
+# 90 second timeout with kill signal
+timeout -k 5s 90s long-running-command
+```
+
+## 6. Input Automation (Last Resort)
+
+**If a command absolutely requires input, script it:**
+
+```bash
+# Using expect
+expect -c 'spawn railway link; expect "Select a project"; send "my-project\r"; expect eof'
+
+# Using printf (crude but effective)
+printf "2\n" | interactive-command
+
+# Using yes (for repeated yes/no)
+yes | command-that-asks-yes-no
+```
+
+## 7. Line Buffering for Progress Visibility
+
+**Force line buffering so agents can see progress:**
+```bash
+stdbuf -oL -eL long-running-command
+```
+
+## 8. Verification Commands
+
+**After any potentially problematic command, verify success:**
+```bash
+# Check exit code
+echo "Exit code: $?"
+
+# Check if process is running
+pgrep -f "process-name"
+
+# Check if service is responding
+curl -s -I http://localhost:PORT
+```
+
+## 9. Common Anti-Patterns to AVOID
+
+❌ **NEVER do these:**
+- `railway link` (without project ID)
+- `npm init` (interactive)
+- `git clone` without `--quiet`
+- Commands without timeout protection
+- Commands that might open editors (git commit without -m)
+
+✅ **ALWAYS do these:**
+- Use `--json` flags when available
+- Set `CI=1 NO_COLOR=1`
+- Use timeout protection
+- Redirect verbose output to logs
+- Verify success with separate commands
+
+## 10. Railway-Specific One-Liner Template
+
+```bash
+export RAILWAY_TOKEN=your_token
+PID=$(railway list --json | jq -r '.projects[]|select(.name=="your-project").id')
+railway link "$PID"
+railway up --service web --detach
+```
+
+## 11. Makefile Integration
+
+**Create a Makefile for complex operations:**
+```makefile
+deploy:
+	@export RAILWAY_TOKEN=$$(cat .railway-token) && \
+	PID=$$(railway list --json | jq -r '.projects[]|select(.name=="my-project").id') && \
+	railway link "$$PID" && \
+	railway up --service web --detach
+
+install:
+	@CI=1 NO_COLOR=1 npm install --yes --no-audit --no-fund
+```
+
+**Then agents can simply run: `make deploy`**

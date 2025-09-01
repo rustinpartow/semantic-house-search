@@ -74,6 +74,7 @@ This is the PRIMARY guide for the property search project. ALWAYS start here to 
 - **Build verification** → `13-railway-build-verification`
 - **Railway CLI monitoring** → `14-railway-cli-monitoring`
 - **Deployment lessons learned** → `15-deployment-lessons-learned`
+- **Terminal command syntax** → `16-terminal-command-syntax`
 
 ## 3. VERIFICATION CHECKLIST (MANDATORY)
 
