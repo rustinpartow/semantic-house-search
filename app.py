@@ -179,6 +179,24 @@ def debug_search():
             'traceback': traceback.format_exc()
         }), 500
 
+@app.route('/test/zillow')
+def test_zillow():
+    """Test if we can reach Zillow at all"""
+    try:
+        import requests
+        response = requests.get('https://www.zillow.com/', timeout=10)
+        return jsonify({
+            'status_code': response.status_code,
+            'content_length': len(response.content),
+            'headers': dict(response.headers),
+            'success': response.status_code == 200
+        })
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'success': False
+        }), 500
+
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({'error': 'Not found'}), 404
