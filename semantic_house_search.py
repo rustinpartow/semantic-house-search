@@ -466,8 +466,8 @@ class SemanticHouseSearch:
             print(f"🏠 Home types: {', '.join(self.interpreted_filters['home_types'])}")
         
         endpoints = [
-            "https://www.zillow.com/homes/San-Francisco-CA_rb/",
-            "https://www.zillow.com/homes/for_sale/San-Francisco-CA/"
+            "https://www.zillow.com/async-create-search-page-state",
+            "https://www.zillow.com/search/search-results"
         ]
         
         all_properties = []
@@ -475,8 +475,8 @@ class SemanticHouseSearch:
         for endpoint in endpoints:
             try:
                 payload = self.get_search_payload(listing_type)
-                # More conservative rate limiting
-                time.sleep(random.uniform(3, 6))
+                # Very conservative rate limiting to avoid being blocked
+                time.sleep(random.uniform(15, 25))
                 
                 # Add more realistic headers
                 headers = {
@@ -518,7 +518,7 @@ class SemanticHouseSearch:
                         "wants": {"cat1": ["listResults", "mapResults"], "cat2": ["total"]},
                         "requestId": 1
                     }
-                    time.sleep(random.uniform(4, 7))
+                    time.sleep(random.uniform(20, 30))
                     response = self.session.put(endpoint, json=simple_payload, timeout=30)
                     if response.status_code == 200:
                         data = response.json()
