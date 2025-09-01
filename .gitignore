@@ -57,6 +57,7 @@ logs/
 
 # Generated files
 *.html
+!templates/*.html
 *.json
 !config.json
 !requirements.txt

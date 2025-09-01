@@ -1,0 +1,253 @@
+# Deployment Lessons Learned
+
+This rule captures critical lessons from the Railway deployment journey to prevent future issues.
+
+## 1. CRITICAL LESSONS FROM RAILWAY DEPLOYMENT
+
+### 1.1 Railway Web Service Detection
+**LESSON:** Railway only auto-exposes services when it detects a proper web service configuration.
+
+**REQUIREMENTS:**
+- ✅ **Procfile with `web:` prefix** - `web: python app.py`
+- ✅ **App binds to 0.0.0.0 and $PORT** - `app.run(host='0.0.0.0', port=port)`
+- ✅ **No Gunicorn in requirements.txt** - Railway auto-detects and uses Gunicorn if present
+- ✅ **railway.json with explicit start command** - Forces Railway to use our command
+
+**FAILURE PATTERNS:**
+- ❌ "Unexposed service" = Missing proper web service configuration
+- ❌ Gunicorn in requirements.txt = Railway ignores Procfile and uses Gunicorn
+- ❌ Wrong host binding = Service runs but no public domain
+
+### 1.2 Flask vs Gunicorn for Railway
+**LESSON:** For Railway deployment, use Flask development server directly, not Gunicorn.
+
+**CORRECT APPROACH:**
+```python
+# app.py - CORRECT
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
+```
+
+```bash
+# Procfile - CORRECT
+web: python app.py
+```
+
+```json
+# railway.json - CORRECT
+{
+  "deploy": {
+    "startCommand": "python app.py"
+  }
+}
+```
+
+**WRONG APPROACH:**
+```bash
+# Procfile - WRONG (causes issues)
+web: gunicorn app:app --bind 0.0.0.0:$PORT
+```
+
+### 1.3 Interactive Command Hell
+**LESSON:** Cursor agents CANNOT handle interactive commands, prompts, or TUIs.
+
+**SOLUTION PATTERNS:**
+- ✅ **Always use timeouts:** `timeout 10s command`
+- ✅ **Use CI=1 NO_COLOR=1:** Disables interactive UIs
+- ✅ **Use --json flags:** Machine-parseable output
+- ✅ **Create wrapper scripts:** Handle prompts with expect
+- ✅ **Use curl for health checks:** Direct HTTP testing
+
+**FAILURE PATTERNS:**
+- ❌ `railway link` without project ID = Interactive prompt
+- ❌ `railway logs` without timeout = Hangs forever
+- ❌ Commands that wait for input = Agent gets stuck
+
+## 2. DEPLOYMENT VERIFICATION STRATEGY
+
+### 2.1 Multi-Layer Verification
+**LESSON:** Never trust a single verification method.
+
+**VERIFICATION LAYERS:**
+1. **Local build tests** - `make test-build`
+2. **Railway CLI status** - `make railway-simple`
+3. **HTTP health checks** - `curl https://domain/health`
+4. **Manual testing** - Visit live URL
+
+### 2.2 Build Verification System
+**LESSON:** Catch issues locally before deployment.
+
+**REQUIRED TESTS:**
+- ✅ All required files present
+- ✅ Dependencies install correctly
+- ✅ App imports without errors
+- ✅ Health endpoint responds
+- ✅ No Gunicorn in requirements.txt (for Railway)
+
+### 2.3 Railway-Specific Monitoring
+**LESSON:** Railway needs special monitoring due to its auto-detection behavior.
+
+**MONITORING COMMANDS:**
+```bash
+# Simple health check (RECOMMENDED)
+make railway-simple
+
+# Full monitoring
+make railway-monitor
+
+# Direct curl test
+curl https://semantic-house-search-production.up.railway.app/health
+```
+
+## 3. CONFIGURATION MANAGEMENT
+
+### 3.1 Railway Configuration Files
+**LESSON:** Railway needs explicit configuration to work correctly.
+
+**REQUIRED FILES:**
+- ✅ **Procfile** - `web: python app.py`
+- ✅ **railway.json** - Explicit start command and health check
+- ✅ **requirements.txt** - WITHOUT Gunicorn for Flask apps
+- ✅ **app.py** - Proper host/port binding
+
+### 3.2 Environment Variables
+**LESSON:** Railway automatically sets PORT, but app must use it.
+
+**REQUIRED ENV VARS:**
+- ✅ **PORT** - Set by Railway automatically
+- ✅ **SECRET_KEY** - Set manually in Railway dashboard
+- ✅ **FLASK_ENV** - Set to "production" for live deployment
+
+## 4. DEBUGGING STRATEGIES
+
+### 4.1 Railway Log Analysis
+**LESSON:** Railway logs show exactly what's happening.
+
+**SUCCESS INDICATORS:**
+```
+* Serving Flask app 'app'
+* Running on all addresses (0.0.0.0)
+* Running on http://0.0.0.0:8080
+```
+
+**FAILURE INDICATORS:**
+```
+[INFO] Starting gunicorn 21.2.0  # Wrong - should be Flask
+Connection in use: ('0.0.0.0', 8080)  # Port conflicts
+```
+
+### 4.2 Domain Generation
+**LESSON:** Railway generates domains automatically when service is properly configured.
+
+**DOMAIN CHECK:**
+```bash
+# Get domain
+CI=1 NO_COLOR=1 railway domain
+
+# Test domain
+curl https://domain/health
+```
+
+## 5. PREVENTION STRATEGIES
+
+### 5.1 Cursor Agent Rules
+**LESSON:** Cursor agents need explicit rules to avoid interactive commands.
+
+**MANDATORY RULES:**
+- ✅ **NEVER run interactive commands**
+- ✅ **ALWAYS use timeouts**
+- ✅ **ALWAYS use CI=1 NO_COLOR=1**
+- ✅ **ALWAYS use --json when available**
+- ✅ **Create wrapper scripts for complex commands**
+
+### 5.2 Build Verification Integration
+**LESSON:** Integrate Railway monitoring into build process.
+
+**INTEGRATION POINTS:**
+- ✅ **Pre-deployment:** `make test-build`
+- ✅ **Post-deployment:** `make railway-simple`
+- ✅ **Continuous monitoring:** `make railway-monitor`
+
+## 6. COMMON PITFALLS TO AVOID
+
+### 6.1 Railway-Specific Pitfalls
+- ❌ **Adding Gunicorn to requirements.txt** - Railway auto-detects and uses it
+- ❌ **Wrong Procfile format** - Must be `web: command`
+- ❌ **Missing host binding** - Must bind to 0.0.0.0
+- ❌ **Hardcoded ports** - Must use $PORT environment variable
+
+### 6.2 Cursor Agent Pitfalls
+- ❌ **Interactive commands** - Always hang the agent
+- ❌ **Commands without timeouts** - Can run forever
+- ❌ **Commands that wait for input** - Agent gets stuck
+- ❌ **Complex command chains** - Break into simple steps
+
+## 7. SUCCESS PATTERNS
+
+### 7.1 Railway Deployment Success
+```bash
+# 1. Local verification
+make test-build
+
+# 2. Deploy
+git push origin main
+
+# 3. Verify deployment
+make railway-simple
+
+# 4. Test functionality
+curl https://domain/health
+```
+
+### 7.2 Monitoring Success
+```bash
+# Simple monitoring (RECOMMENDED)
+make railway-simple
+
+# Full monitoring
+make railway-monitor
+
+# Direct testing
+curl https://semantic-house-search-production.up.railway.app/health
+```
+
+## 8. EMERGENCY PROCEDURES
+
+### 8.1 If Deployment Fails
+1. **Check Railway logs:** `make railway-logs`
+2. **Verify configuration:** Check Procfile, railway.json, requirements.txt
+3. **Test locally:** `make test-build`
+4. **Redeploy:** `git push origin main`
+
+### 8.2 If Service Not Exposed
+1. **Check Procfile:** Must have `web:` prefix
+2. **Check requirements.txt:** Remove Gunicorn if present
+3. **Check app.py:** Must bind to 0.0.0.0 and $PORT
+4. **Redeploy:** Force Railway to re-detect service type
+
+### 8.3 If Agent Gets Stuck
+1. **Use timeout commands:** `timeout 10s command`
+2. **Use wrapper scripts:** Handle interactive prompts
+3. **Use curl for testing:** Direct HTTP requests
+4. **Use simple commands:** Avoid complex command chains
+
+## 9. KEY TAKEAWAYS
+
+### 9.1 Railway-Specific
+- **Railway auto-detects service types** - Be explicit in configuration
+- **Flask development server works fine** - Don't need Gunicorn for Railway
+- **Domain generation is automatic** - When service is properly configured
+- **Health checks are critical** - For monitoring and debugging
+
+### 9.2 Cursor Agent-Specific
+- **Interactive commands are death** - Always use non-interactive alternatives
+- **Timeouts are essential** - Prevent infinite hangs
+- **Simple commands work best** - Complex chains often fail
+- **Wrapper scripts are powerful** - Handle complex interactions
+
+### 9.3 General Deployment
+- **Multi-layer verification** - Never trust a single check
+- **Local testing first** - Catch issues before deployment
+- **Monitoring is critical** - Know when things break
+- **Documentation matters** - Capture lessons learned

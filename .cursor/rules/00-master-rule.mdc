@@ -40,6 +40,13 @@ This is the PRIMARY guide for the property search project. ALWAYS start here to 
 - Use `make railway-monitor` to check deployment status
 - Use `make railway-logs` to get deployment logs
 
+**1.6: Deployment Lessons Learned (CRITICAL)**
+- Railway auto-detects service types - be explicit in configuration
+- Flask development server works fine for Railway - don't need Gunicorn
+- Interactive commands are death for Cursor agents - always use timeouts
+- Multi-layer verification prevents deployment failures
+- Document all lessons learned to prevent future issues
+
 ## 2. DECISION TREE - Which Rules to Use
 
 ### 2.1 Railway Deployment
@@ -66,6 +73,7 @@ This is the PRIMARY guide for the property search project. ALWAYS start here to 
 - **Documentation** → `12-documentation`
 - **Build verification** → `13-railway-build-verification`
 - **Railway CLI monitoring** → `14-railway-cli-monitoring`
+- **Deployment lessons learned** → `15-deployment-lessons-learned`
 
 ## 3. VERIFICATION CHECKLIST (MANDATORY)
 
@@ -93,3 +101,9 @@ Before claiming ANY deployment works:
 **Railway needs explicit configuration to generate public domains. Without railway.json, services run as background processes without public URLs.**
 
 **Each subdirectory is a separate deployable service. Don't mix configurations between services.**
+
+**Flask development server works perfectly for Railway - don't add Gunicorn to requirements.txt.**
+
+**Cursor agents cannot handle interactive commands - always use timeouts and non-interactive flags.**
+
+**Multi-layer verification prevents deployment failures - test locally, verify remotely, monitor continuously.**
