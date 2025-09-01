@@ -1,0 +1,267 @@
+# Railway CLI Monitoring
+
+This rule covers non-interactive Railway CLI commands and monitoring for Cursor agents.
+
+## 1. CRITICAL: Non-Interactive Commands Only
+
+### 1.1 Cursor Agent Limitation
+**NEVER use interactive commands that wait for input or open TUIs. Cursor agents cannot handle prompts, menus, or stdin input.**
+
+### 1.2 Required Environment Variables
+Always prepend commands with:
+```bash
+CI=1 NO_COLOR=1
+```
+This disables interactive UIs and forces non-interactive mode.
+
+### 1.3 Timeout Protection
+Wrap all Railway commands with timeout:
+```bash
+timeout -k 5s 90s railway <command>
+```
+
+## 2. Railway CLI Setup (Non-Interactive)
+
+### 2.1 Authentication
+```bash
+# Use Railway token instead of interactive login
+export RAILWAY_TOKEN="your-token-here"
+
+# Or use existing auth
+CI=1 NO_COLOR=1 railway whoami
+```
+
+### 2.2 Project Linking
+```bash
+# Get project ID non-interactively
+PROJECT_ID=$(CI=1 NO_COLOR=1 railway list --json | jq -r '.[] | select(.name=="semantic-house-search") | .id')
+
+# Link using project ID (if supported)
+CI=1 NO_COLOR=1 railway link --project "$PROJECT_ID"
+```
+
+### 2.3 Service Identification
+```bash
+# Get service ID
+SERVICE_ID=$(CI=1 NO_COLOR=1 railway list --json | jq -r '.[] | select(.name=="semantic-house-search") | .services.edges[0].node.id')
+```
+
+## 3. Monitoring Commands
+
+### 3.1 Deployment Status
+```bash
+# Check deployment status
+CI=1 NO_COLOR=1 railway status
+
+# Get deployment logs (non-interactive)
+CI=1 NO_COLOR=1 railway logs --json | jq '.'
+
+# Get recent logs (last 100 lines)
+CI=1 NO_COLOR=1 railway logs --tail 100
+```
+
+### 3.2 Service Health
+```bash
+# Check if service is running
+CI=1 NO_COLOR=1 railway status | grep -i "active\|running"
+
+# Get service metrics
+CI=1 NO_COLOR=1 railway metrics
+```
+
+### 3.3 Domain/URL Information
+```bash
+# Get service URL
+CI=1 NO_COLOR=1 railway domain
+
+# Get all domains
+CI=1 NO_COLOR=1 railway domains
+```
+
+## 4. Deployment Commands
+
+### 4.1 Deploy Without Prompts
+```bash
+# Deploy specific service
+CI=1 NO_COLOR=1 railway up --service semantic-house-search --detach
+
+# Deploy with specific environment
+CI=1 NO_COLOR=1 railway up --environment production --detach
+```
+
+### 4.2 Environment Variables
+```bash
+# Set environment variables
+CI=1 NO_COLOR=1 railway variables set SECRET_KEY="your-secret-key"
+CI=1 NO_COLOR=1 railway variables set FLASK_ENV="production"
+
+# List environment variables
+CI=1 NO_COLOR=1 railway variables
+```
+
+## 5. Automated Monitoring Scripts
+
+### 5.1 Health Check Script
+```bash
+#!/bin/bash
+# railway-health-check.sh
+
+set -e
+
+# Check if Railway CLI is available
+if ! command -v railway &> /dev/null; then
+    echo "❌ Railway CLI not found"
+    exit 1
+fi
+
+# Check authentication
+if ! CI=1 NO_COLOR=1 railway whoami &> /dev/null; then
+    echo "❌ Not authenticated with Railway"
+    exit 1
+fi
+
+# Check project link
+if ! CI=1 NO_COLOR=1 railway status &> /dev/null; then
+    echo "❌ Project not linked"
+    exit 1
+fi
+
+# Check service status
+STATUS=$(CI=1 NO_COLOR=1 railway status 2>/dev/null | grep -i "active\|running" || echo "inactive")
+if [[ "$STATUS" == *"active"* ]] || [[ "$STATUS" == *"running"* ]]; then
+    echo "✅ Service is active"
+else
+    echo "❌ Service is not active: $STATUS"
+    exit 1
+fi
+
+# Check for domain
+DOMAIN=$(CI=1 NO_COLOR=1 railway domain 2>/dev/null || echo "")
+if [[ -n "$DOMAIN" ]]; then
+    echo "✅ Domain available: $DOMAIN"
+else
+    echo "❌ No domain configured"
+    exit 1
+fi
+
+echo "✅ All health checks passed"
+```
+
+### 5.2 Log Monitoring Script
+```bash
+#!/bin/bash
+# railway-logs.sh
+
+# Get recent logs
+echo "📋 Recent Railway logs:"
+CI=1 NO_COLOR=1 railway logs --tail 50
+
+echo ""
+echo "📊 Service status:"
+CI=1 NO_COLOR=1 railway status
+
+echo ""
+echo "🌐 Domain info:"
+CI=1 NO_COLOR=1 railway domain
+```
+
+## 6. Makefile Integration
+
+### 6.1 Railway Commands in Makefile
+```makefile
+# Railway monitoring commands
+.PHONY: railway-status railway-logs railway-health railway-deploy
+
+railway-status:
+	@echo "Checking Railway status..."
+	@CI=1 NO_COLOR=1 railway status
+
+railway-logs:
+	@echo "Getting Railway logs..."
+	@CI=1 NO_COLOR=1 railway logs --tail 100
+
+railway-health:
+	@echo "Running Railway health check..."
+	@./railway-health-check.sh
+
+railway-deploy:
+	@echo "Deploying to Railway..."
+	@CI=1 NO_COLOR=1 railway up --detach
+
+# Combined monitoring
+railway-monitor: railway-status railway-logs railway-health
+	@echo "✅ Railway monitoring complete"
+```
+
+## 7. Error Handling
+
+### 7.1 Common Issues
+- **Authentication errors**: Check `railway whoami`
+- **Project not linked**: Run project linking commands
+- **Service not found**: Verify service name and ID
+- **Permission errors**: Check Railway token permissions
+
+### 7.2 Debugging Commands
+```bash
+# Debug authentication
+CI=1 NO_COLOR=1 railway whoami
+
+# Debug project list
+CI=1 NO_COLOR=1 railway list --json | jq '.'
+
+# Debug service status
+CI=1 NO_COLOR=1 railway status --json | jq '.'
+```
+
+## 8. Integration with Build Verification
+
+### 8.1 Pre-Deployment Check
+```bash
+# Before deploying, verify Railway setup
+make railway-health
+```
+
+### 8.2 Post-Deployment Verification
+```bash
+# After deployment, verify it's working
+make railway-monitor
+```
+
+## 9. Cursor Agent Rules
+
+### 9.1 MANDATORY: Non-Interactive Only
+- **NEVER run commands that wait for input**
+- **ALWAYS use CI=1 NO_COLOR=1 prefix**
+- **ALWAYS use --json flags when available**
+- **ALWAYS use timeout protection**
+- **NEVER use interactive flags or prompts**
+
+### 9.2 Command Templates
+```bash
+# Standard Railway command template
+timeout -k 5s 90s CI=1 NO_COLOR=1 railway <command> --json
+
+# Status check template
+CI=1 NO_COLOR=1 railway status | grep -i "active\|running"
+
+# Log monitoring template
+CI=1 NO_COLOR=1 railway logs --tail 100
+```
+
+## 10. Troubleshooting
+
+### 10.1 If Commands Hang
+- Check for interactive prompts
+- Add timeout protection
+- Use --json flags
+- Verify environment variables
+
+### 10.2 If Authentication Fails
+- Check Railway token
+- Verify CLI version
+- Try `railway logout` then `railway login`
+
+### 10.3 If Project Not Found
+- Verify project name
+- Check team permissions
+- Use project ID instead of name

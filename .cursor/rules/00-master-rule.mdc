@@ -33,6 +33,13 @@ This is the PRIMARY guide for the property search project. ALWAYS start here to 
 - Use `deploy.sh` script for automated deployment
 - NEVER claim deployment works without running verification tests
 
+**1.5: Railway CLI Monitoring (MANDATORY)**
+- ALWAYS use non-interactive Railway CLI commands only
+- NEVER run commands that wait for input or open TUIs
+- ALWAYS use `CI=1 NO_COLOR=1` prefix for Railway commands
+- Use `make railway-monitor` to check deployment status
+- Use `make railway-logs` to get deployment logs
+
 ## 2. DECISION TREE - Which Rules to Use
 
 ### 2.1 Railway Deployment
@@ -58,6 +65,7 @@ This is the PRIMARY guide for the property search project. ALWAYS start here to 
 - **Configuration management** → `11-configuration`
 - **Documentation** → `12-documentation`
 - **Build verification** → `13-railway-build-verification`
+- **Railway CLI monitoring** → `14-railway-cli-monitoring`
 
 ## 3. VERIFICATION CHECKLIST (MANDATORY)
 
