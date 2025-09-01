@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Semantic House Search</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-brain"></i> Semantic House Search</h1>
+                <p class="subtitle">Find your perfect home using natural language queries</p>
+            </div>
+        </header>
+
+        <!-- Search Form -->
+        <div class="search-section">
+            <form id="searchForm" class="search-form">
+                <div class="form-group">
+                    <label for="query">
+                        <i class="fas fa-comment-dots"></i> Describe your ideal home
+                    </label>
+                    <textarea 
+                        id="query" 
+                        name="query" 
+                        placeholder="e.g., 'no one living above me, NOT a fixer-upper, high ceilings, natural light, in a safe neighborhood like Cole Valley or Hayes Valley'"
+                        rows="3"
+                        required
+                    ></textarea>
+                    <small class="help-text">Use natural language to describe what you're looking for</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="min_price">
+                            <i class="fas fa-dollar-sign"></i> Min Price
+                        </label>
+                        <input type="number" id="min_price" name="min_price" value="1000000" min="0" step="10000">
+                    </div>
+                    <div class="form-group">
+                        <label for="max_price">
+                            <i class="fas fa-dollar-sign"></i> Max Price
+                        </label>
+                        <input type="number" id="max_price" name="max_price" value="2000000" min="0" step="10000">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="min_sqft">
+                            <i class="fas fa-home"></i> Min Sqft
+                        </label>
+                        <input type="number" id="min_sqft" name="min_sqft" value="1000" min="0" step="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="max_sqft">
+                            <i class="fas fa-home"></i> Max Sqft
+                        </label>
+                        <input type="number" id="max_sqft" name="max_sqft" value="2000" min="0" step="50">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="center">
+                            <i class="fas fa-map-marker-alt"></i> Location
+                        </label>
+                        <input type="text" id="center" name="center" value="San Francisco, CA" placeholder="e.g., San Francisco, CA">
+                    </div>
+                    <div class="form-group">
+                        <label for="radius">
+                            <i class="fas fa-circle"></i> Radius (miles)
+                        </label>
+                        <input type="number" id="radius" name="radius" value="2.0" min="0.1" max="10" step="0.1">
+                    </div>
+                </div>
+
+                <button type="submit" class="search-btn" id="searchBtn">
+                    <i class="fas fa-search"></i> Search Properties
+                </button>
+            </form>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Searching properties...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="results hidden">
+            <div class="results-header">
+                <h2><i class="fas fa-home"></i> Search Results</h2>
+                <div id="resultsSummary" class="results-summary"></div>
+            </div>
+
+            <!-- Semantic Query Display -->
+            <div id="semanticQuery" class="semantic-query hidden">
+                <h3><i class="fas fa-brain"></i> Semantic Query</h3>
+                <div id="queryText" class="query-text"></div>
+                <div id="interpretedFilters" class="interpreted-filters"></div>
+            </div>
+
+            <!-- Properties Grid -->
+            <div id="propertiesGrid" class="properties-grid"></div>
+
+            <!-- No Results -->
+            <div id="noResults" class="no-results hidden">
+                <i class="fas fa-home"></i>
+                <h3>No properties found</h3>
+                <p>Try adjusting your search criteria or expanding your search area.</p>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error" class="error hidden">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Search Error</h3>
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Built with ❤️ for finding your perfect home • Data from Zillow</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
