@@ -7,7 +7,14 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 import json
 import os
 from datetime import datetime
-from semantic_house_search import SemanticHouseSearch, load_config, DEFAULT_CONFIG
+try:
+    from semantic_house_search import SemanticHouseSearch, load_config, DEFAULT_CONFIG
+except ImportError as e:
+    print(f"Warning: Could not import semantic_house_search: {e}")
+    SemanticHouseSearch = None
+    load_config = None
+    DEFAULT_CONFIG = {}
+
 import traceback
 
 app = Flask(__name__)
@@ -18,7 +25,11 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-i
 @app.route('/')
 def index():
     """Main search page"""
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        app.logger.error(f"Error rendering index.html: {e}")
+        return jsonify({'error': f'Template error: {str(e)}'}), 500
 
 @app.route('/api/search', methods=['POST'])
 def api_search():
