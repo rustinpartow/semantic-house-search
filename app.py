@@ -125,6 +125,60 @@ def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
 
+@app.route('/debug/search', methods=['POST'])
+def debug_search():
+    """Debug endpoint to test search without full processing"""
+    try:
+        data = request.get_json()
+        query = data.get('query', '')
+        
+        # Test if semantic search module is working
+        if SemanticHouseSearch is None:
+            return jsonify({
+                'error': 'SemanticHouseSearch module not available',
+                'import_error': True
+            }), 500
+        
+        # Test basic search functionality
+        config = DEFAULT_CONFIG.copy()
+        config.update({
+            "search_area": {
+                "center": "San Francisco, CA",
+                "radius_miles": 2.0,
+                "auto_bounds": True
+            },
+            "filters": {
+                "min_price": 1000000,
+                "max_price": 2000000,
+                "min_sqft": 1000,
+                "max_sqft": 2000,
+                "home_types": ["CONDO", "SINGLE_FAMILY", "TOWNHOUSE"],
+                "include_sold": False,
+                "max_sold_age_months": 6
+            },
+            "output": {
+                "max_listings": 10  # Limit for testing
+            }
+        })
+        
+        searcher = SemanticHouseSearch(config)
+        
+        # Test basic search
+        success = searcher.search_properties(query)
+        
+        return jsonify({
+            'success': success,
+            'query': query,
+            'config': config,
+            'searcher_created': True
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
+
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({'error': 'Not found'}), 404
